@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI Drop Components — Free React UI Library</title>
+  <meta name="description" content="50+ free React UI components built with Tailwind CSS. Buttons, cards, forms, and more. Copy-paste ready." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            violet: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' },
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #020617; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; margin: 0; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .code-block { background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; overflow-x: auto; }
+    .code-block pre { margin: 0; font-size: 12px; color: #94a3b8; font-family: 'Fira Code', monospace; white-space: pre-wrap; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    .animate-spin { animation: spin 1s linear infinite; }
+    .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+    .animate-bounce { animation: bounce 1s ease-in-out infinite; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .sidebar-link { display: block; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #94a3b8; cursor: pointer; transition: all 0.15s; }
+    .sidebar-link:hover { background: rgba(139,92,246,0.1); color: #a78bfa; }
+    .sidebar-link.active { background: rgba(139,92,246,0.15); color: #a78bfa; border-left: 2px solid #7c3aed; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    /* ── DATA ─────────────────────────────────────── */
+    const NAV_CATEGORIES = [
+      { id: "buttons",     label: "Buttons",      emoji: "🔵" },
+      { id: "badges",      label: "Badges",        emoji: "🏷️" },
+      { id: "cards",       label: "Cards",         emoji: "🃏" },
+      { id: "inputs",      label: "Inputs & Forms",emoji: "📝" },
+      { id: "alerts",      label: "Alerts",        emoji: "🔔" },
+      { id: "avatars",     label: "Avatars",       emoji: "👤" },
+      { id: "spinners",    label: "Loading",       emoji: "⏳" },
+      { id: "toggles",     label: "Toggles",       emoji: "🔄" },
+      { id: "progress",    label: "Progress",      emoji: "📊" },
+      { id: "gradients",   label: "Gradients",     emoji: "🌈" },
+      { id: "glass",       label: "Glassmorphism", emoji: "✦" },
+      { id: "neon",        label: "Neon",          emoji: "💡" },
+    ];
+
+    /* ── COPY BUTTON ─────────────────────────────── */
+    function CopyBtn({ code }) {
+      const [copied, setCopied] = useState(false);
+      const copy = () => {
+        navigator.clipboard.writeText(code).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      };
+      return (
+        <button onClick={copy}
+          className="absolute top-3 right-3 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+          style={{ background: copied ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.07)", color: copied ? "#34d399" : "#94a3b8", border: copied ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(255,255,255,0.08)" }}>
+          {copied ? "✓ Copied" : "Copy"}
+        </button>
+      );
+    }
+
+    /* ── COMPONENT PREVIEW CARD ──────────────────── */
+    function PreviewCard({ title, description, children, code }) {
+      const [showCode, setShowCode] = useState(false);
+      return (
+        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.07)", background: "#0a0f1e" }}>
+          {/* Header */}
+          <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <div>
+              <h3 className="text-sm font-bold text-white">{title}</h3>
+              {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+            </div>
+            <button onClick={() => setShowCode(!showCode)}
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+              style={{ background: showCode ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.05)", color: showCode ? "#a78bfa" : "#64748b", border: "1px solid rgba(255,255,255,0.08)" }}>
+              {showCode ? "Preview" : "</>  Code"}
+            </button>
+          </div>
+
+          {/* Preview */}
+          {!showCode && (
+            <div className="p-6 flex flex-wrap gap-3 items-start min-h-[80px]">
+              {children}
+            </div>
+          )}
+
+          {/* Code */}
+          {showCode && (
+            <div className="relative">
+              <div className="code-block rounded-none" style={{ border: "none", borderRadius: 0 }}>
+                <pre>{code}</pre>
+              </div>
+              <CopyBtn code={code} />
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ── SECTION HEADER ──────────────────────────── */
+    function SectionHeader({ emoji, title, desc }) {
+      return (
+        <div className="mb-6 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-2xl">{emoji}</span>
+            <h2 className="text-xl font-black text-white">{title}</h2>
+          </div>
+          {desc && <p className="text-sm text-slate-500 ml-11">{desc}</p>}
+        </div>
+      );
+    }
+
+    /* ── TOGGLE COMPONENT ────────────────────────── */
+    function Toggle({ label, defaultOn = false, color = "#7c3aed" }) {
+      const [on, setOn] = useState(defaultOn);
+      return (
+        <div className="flex items-center gap-3">
+          <button onClick={() => setOn(!on)}
+            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+            style={{ background: on ? color : "rgba(255,255,255,0.1)" }}>
+            <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+              style={{ transform: on ? "translateX(1.375rem)" : "translateX(0.25rem)" }} />
+          </button>
+          {label && <span className="text-sm text-slate-400">{label}</span>}
+        </div>
+      );
+    }
+
+    /* ── PROGRESS BAR ─────────────────────────────── */
+    function ProgressBar({ value, color = "#7c3aed", label }) {
+      return (
+        <div className="w-full">
+          {label && <div className="flex justify-between text-xs text-slate-500 mb-1"><span>{label}</span><span>{value}%</span></div>}
+          <div className="h-2 w-full rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>
+            <div className="h-full rounded-full transition-all duration-700"
+              style={{ width: `${value}%`, background: `linear-gradient(90deg, ${color}, ${color}99)` }} />
+          </div>
+        </div>
+      );
+    }
+
+    /* ── ALL SECTIONS ─────────────────────────────── */
+    function Buttons() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🔵" title="Buttons" desc="Versatile button variants for every use case." />
+          <PreviewCard title="Solid Variants"
+            code={`<button className="rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-700">Primary</button>
+<button className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700">Success</button>
+<button className="rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700">Danger</button>
+<button className="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600">Warning</button>`}>
+            {[["violet","Primary"],["emerald","Success"],["red","Danger"],["amber","Warning"],["sky","Info"],["slate-700","Secondary"]].map(([c,l])=>(
+              <button key={l} className={`rounded-lg bg-${c}-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:scale-105`}
+                style={{ background: c==="slate-700"?"#334155":c==="amber"?"#d97706":undefined }}>{l}</button>
+            ))}
+          </PreviewCard>
+
+          <PreviewCard title="Outline Variants"
+            code={`<button className="rounded-lg border-2 border-violet-600 px-5 py-2.5 text-sm font-medium text-violet-400 hover:bg-violet-600 hover:text-white transition-all">Primary</button>
+<button className="rounded-lg border-2 border-emerald-600 px-5 py-2.5 text-sm font-medium text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all">Success</button>`}>
+            {[["#7c3aed","#a78bfa","Primary"],["#059669","#34d399","Success"],["#dc2626","#f87171","Danger"],["#d97706","#fbbf24","Warning"]].map(([bc,tc,l])=>(
+              <button key={l} className="rounded-lg px-5 py-2.5 text-sm font-medium transition-all hover:scale-105"
+                style={{ border:`2px solid ${bc}`, color:tc, background:"transparent" }}
+                onMouseEnter={e=>{e.target.style.background=bc;e.target.style.color="#fff"}}
+                onMouseLeave={e=>{e.target.style.background="transparent";e.target.style.color=tc}}>{l}</button>
+            ))}
+          </PreviewCard>
+
+          <PreviewCard title="Gradient Buttons"
+            code={`<button className="rounded-xl px-6 py-2.5 text-sm font-bold text-white hover:scale-105 transition-all"
+  style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)" }}>
+  Gradient
+</button>`}>
+            {[["#7c3aed","#ec4899","Purple Pink"],["#0ea5e9","#6366f1","Sky Violet"],["#10b981","#0ea5e9","Emerald"],["#f97316","#ef4444","Sunset"],["#f59e0b","#f97316","Gold"]].map(([c1,c2,l])=>(
+              <button key={l} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105 hover:brightness-110"
+                style={{ background:`linear-gradient(135deg,${c1},${c2})`, boxShadow:`0 4px 14px ${c1}55` }}>{l}</button>
+            ))}
+          </PreviewCard>
+
+          <PreviewCard title="Icon Buttons"
+            code={`<button className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white"
+  style={{ background: "linear-gradient(135deg,#7c3aed,#a855f7)" }}>
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 3v12m0 0l-4-4m4 4l4-4M3 20h18"/>
+  </svg>
+  Download
+</button>`}>
+            {[
+              { icon:<path d="M12 3v12m0 0l-4-4m4 4l4-4M3 20h18"/>, label:"Download", g:["#7c3aed","#a855f7"] },
+              { icon:<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>, label:"Send", g:["#0ea5e9","#6366f1"] },
+              { icon:<path d="M20 6L9 17l-5-5"/>, label:"Confirm", g:["#10b981","#0d9488"] },
+              { icon:<><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></>, label:"Share", g:["#f97316","#ef4444"] },
+            ].map(({icon,label,g})=>(
+              <button key={label} className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-all hover:scale-105"
+                style={{ background:`linear-gradient(135deg,${g[0]},${g[1]})` }}>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{icon}</svg>
+                {label}
+              </button>
+            ))}
+          </PreviewCard>
+
+          <PreviewCard title="Loading Button"
+            code={`<button className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white opacity-80 cursor-not-allowed"
+  style={{ background:"linear-gradient(135deg,#7c3aed,#a855f7)" }}>
+  <div className="h-4 w-4 rounded-full animate-spin"
+    style={{ border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"white" }} />
+  Loading...
+</button>`}>
+            <button className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white"
+              style={{ background:"linear-gradient(135deg,#7c3aed,#a855f7)", opacity:0.85 }}>
+              <div className="h-4 w-4 rounded-full animate-spin"
+                style={{ border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"white" }} />
+              Loading...
+            </button>
+            <button className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white"
+              style={{ background:"linear-gradient(135deg,#10b981,#0d9488)", opacity:0.85 }}>
+              <div className="h-4 w-4 rounded-full animate-spin"
+                style={{ border:"2px solid rgba(255,255,255,0.3)", borderTopColor:"white" }} />
+              Saving...
+            </button>
+            <button className="rounded-xl px-6 py-2.5 text-sm font-bold text-white"
+              style={{ background:"linear-gradient(135deg,#10b981,#0d9488)" }}>
+              ✓ Done!
+            </button>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Badges() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🏷️" title="Badges" desc="Status indicators, labels, and notification badges." />
+          <PreviewCard title="Solid Badges"
+            code={`<span className="rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">New</span>
+<span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">Active</span>
+<span className="rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white">Error</span>`}>
+            {[["#7c3aed","New"],["#059669","Active"],["#dc2626","Error"],["#d97706","Beta"],["#0891b2","Info"],["#6b7280","Archived"]].map(([c,l])=>(
+              <span key={l} className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+                style={{ background:c }}>{l}</span>
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Outline Badges"
+            code={`<span className="rounded-full border border-violet-500 px-3 py-1 text-xs font-semibold text-violet-400">Pro</span>`}>
+            {[["#7c3aed","#a78bfa","Pro"],["#059669","#34d399","Verified"],["#dc2626","#f87171","Deprecated"],["#d97706","#fbbf24","Coming Soon"]].map(([bc,tc,l])=>(
+              <span key={l} className="rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ border:`1px solid ${bc}`, color:tc, background:`${bc}15` }}>{l}</span>
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Dot Badges"
+            code={`<span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-900/40 px-3 py-1 text-xs font-semibold text-emerald-400">
+  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+  Online
+</span>`}>
+            {[["#059669","#34d399","#064e3b","Online"],["#dc2626","#f87171","#450a0a","Offline"],["#d97706","#fbbf24","#451a03","Away"],["#7c3aed","#a78bfa","#2e1065","Live"]].map(([pc,tc,bg,l])=>(
+              <span key={l} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ background:`${bg}88`, color:tc }}>
+                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background:pc }} />
+                {l}
+              </span>
+            ))}
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Cards() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🃏" title="Cards" desc="Content cards with various styles." />
+          <PreviewCard title="Simple Card"
+            code={`<div className="rounded-2xl border border-white/8 bg-slate-900 p-5">
+  <h3 className="font-bold text-white">Card Title</h3>
+  <p className="mt-1 text-sm text-slate-400">Card description goes here.</p>
+  <button className="mt-4 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white">Action</button>
+</div>`}>
+            <div className="rounded-2xl p-5 w-56" style={{ border:"1px solid rgba(255,255,255,0.08)", background:"#0f172a" }}>
+              <h3 className="font-bold text-white mb-1">Card Title</h3>
+              <p className="text-sm text-slate-400 mb-4">Clean card with subtle border and action button.</p>
+              <button className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+                style={{ background:"linear-gradient(135deg,#7c3aed,#a855f7)" }}>Action</button>
+            </div>
+            <div className="rounded-2xl p-5 w-56" style={{ border:"1px solid rgba(16,185,129,0.3)", background:"rgba(16,185,129,0.05)" }}>
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Success</span>
+              <h3 className="font-bold text-white mt-1 mb-1">Payment Done!</h3>
+              <p className="text-sm text-slate-400">Your order has been confirmed.</p>
+            </div>
+          </PreviewCard>
+          <PreviewCard title="Stats Card"
+            code={`<div className="rounded-2xl p-5" style={{ background:"rgba(124,58,237,0.1)", border:"1px solid rgba(124,58,237,0.2)" }}>
+  <p className="text-sm text-slate-400">Total Revenue</p>
+  <p className="text-3xl font-black text-white mt-1">₹24,500</p>
+  <p className="text-xs text-emerald-400 mt-1">↑ 12% this month</p>
+</div>`}>
+            {[
+              { label:"Total Revenue",val:"₹24,500",sub:"↑ 12% this month",subC:"#34d399",c:"#7c3aed" },
+              { label:"Active Users",val:"1,284",sub:"↑ 8% this week",subC:"#34d399",c:"#0ea5e9" },
+              { label:"Pending",val:"42",sub:"↓ 3 from yesterday",subC:"#f87171",c:"#f97316" },
+            ].map(s=>(
+              <div key={s.label} className="rounded-2xl p-5 w-44"
+                style={{ background:`${s.c}18`, border:`1px solid ${s.c}33` }}>
+                <p className="text-xs text-slate-400">{s.label}</p>
+                <p className="text-2xl font-black text-white mt-1">{s.val}</p>
+                <p className="text-xs mt-1" style={{ color:s.subC }}>{s.sub}</p>
+              </div>
+            ))}
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Inputs() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="📝" title="Inputs & Forms" desc="Form elements and input variants." />
+          <PreviewCard title="Text Inputs"
+            code={`<input className="w-full rounded-xl border border-white/10 bg-slate-800/60 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-violet-500 focus:outline-none" placeholder="Enter text..." />`}>
+            <div className="flex flex-col gap-3 w-72">
+              <input className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none transition-all"
+                style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)" }}
+                placeholder="Default input" />
+              <input className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none"
+                style={{ background:"rgba(139,92,246,0.05)", border:"1px solid rgba(139,92,246,0.4)" }}
+                placeholder="Focused state" />
+              <input className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none"
+                style={{ background:"rgba(239,68,68,0.05)", border:"1px solid rgba(239,68,68,0.4)" }}
+                placeholder="Error state" />
+            </div>
+          </PreviewCard>
+          <PreviewCard title="Select & Textarea"
+            code={`<select className="w-full rounded-xl border border-white/10 bg-slate-800 px-4 py-2.5 text-sm text-white focus:border-violet-500 focus:outline-none">
+  <option>Option 1</option>
+</select>`}>
+            <div className="flex flex-col gap-3 w-72">
+              <select className="w-full rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none"
+                style={{ background:"#1e293b", border:"1px solid rgba(255,255,255,0.1)" }}>
+                <option>Select an option</option>
+                <option>Option 1</option>
+                <option>Option 2</option>
+              </select>
+              <textarea rows={3} className="w-full rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none resize-none"
+                style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)" }}
+                placeholder="Type your message..." />
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Alerts() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🔔" title="Alerts" desc="Notification and status alert components." />
+          <PreviewCard title="Alert Variants"
+            code={`<div className="flex items-start gap-3 rounded-xl p-4" style={{ background:"rgba(16,185,129,0.1)", border:"1px solid rgba(16,185,129,0.25)" }}>
+  <span className="text-emerald-400 font-bold text-lg">✓</span>
+  <div>
+    <p className="text-sm font-bold text-emerald-300">Success!</p>
+    <p className="text-xs text-emerald-400/70 mt-0.5">Your changes have been saved.</p>
+  </div>
+</div>`}>
+            <div className="flex flex-col gap-3 w-full max-w-sm">
+              {[
+                { icon:"✓", title:"Success!", msg:"Your changes have been saved.", c:"#10b981" },
+                { icon:"⚠", title:"Warning", msg:"This action cannot be undone.", c:"#f59e0b" },
+                { icon:"✕", title:"Error", msg:"Something went wrong. Try again.", c:"#ef4444" },
+                { icon:"ℹ", title:"Info", msg:"New features are available.", c:"#0ea5e9" },
+              ].map(a=>(
+                <div key={a.title} className="flex items-start gap-3 rounded-xl p-3.5"
+                  style={{ background:`${a.c}15`, border:`1px solid ${a.c}40` }}>
+                  <span className="font-bold text-base" style={{ color:a.c }}>{a.icon}</span>
+                  <div>
+                    <p className="text-sm font-bold" style={{ color:a.c }}>{a.title}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{a.msg}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Avatars() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="👤" title="Avatars" desc="User avatar components with status indicators." />
+          <PreviewCard title="Avatar Sizes"
+            code={`<div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold text-white"
+  style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>AK</div>`}>
+            {[["h-8 w-8 text-xs","AK"],["h-10 w-10 text-sm","JD"],["h-12 w-12 text-base","MR"],["h-16 w-16 text-lg","SK"]].map(([cls,init])=>(
+              <div key={init} className={`${cls} rounded-full flex items-center justify-center font-black text-white`}
+                style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>{init}</div>
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Avatar with Status"
+            code={`<div className="relative h-12 w-12">
+  <div className="h-12 w-12 rounded-full flex items-center justify-center font-bold text-white" style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>AK</div>
+  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-slate-950" />
+</div>`}>
+            {[["#10b981","Online"],["#f59e0b","Away"],["#6b7280","Offline"],["#ef4444","Busy"]].map(([c,l])=>(
+              <div key={l} className="flex flex-col items-center gap-1.5">
+                <div className="relative h-12 w-12">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center font-black text-white text-sm"
+                    style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>AK</div>
+                  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2"
+                    style={{ background:c, ringColor:"#020617" }} />
+                </div>
+                <span className="text-xs text-slate-500">{l}</span>
+              </div>
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Avatar Group"
+            code={`<div className="flex -space-x-3">
+  {users.map((u, i) => (
+    <div key={i} className="h-9 w-9 rounded-full ring-2 ring-slate-950 flex items-center justify-center text-xs font-bold text-white"
+      style={{ background: u.color }}>{u.init}</div>
+  ))}
+  <div className="h-9 w-9 rounded-full ring-2 ring-slate-950 flex items-center justify-center text-xs font-bold text-slate-400"
+    style={{ background:"rgba(255,255,255,0.08)" }}>+4</div>
+</div>`}>
+            <div className="flex -space-x-3">
+              {[["#7c3aed","AK"],["#ec4899","JD"],["#10b981","MR"],["#f97316","SK"]].map(([c,i])=>(
+                <div key={i} className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-black text-white"
+                  style={{ background:c, outline:"2px solid #020617" }}>{i}</div>
+              ))}
+              <div className="h-10 w-10 rounded-full flex items-center justify-center text-xs font-bold text-slate-400"
+                style={{ background:"rgba(255,255,255,0.08)", outline:"2px solid #020617" }}>+4</div>
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Spinners() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="⏳" title="Loading Spinners" desc="Loading state indicators." />
+          <PreviewCard title="Spinner Variants"
+            code={`<div className="h-8 w-8 rounded-full animate-spin"
+  style={{ border:"3px solid rgba(139,92,246,0.2)", borderTopColor:"#7c3aed" }} />`}>
+            {[["#7c3aed","rgba(139,92,246,0.2)"],["#10b981","rgba(16,185,129,0.2)"],["#ec4899","rgba(236,72,153,0.2)"],["#f97316","rgba(249,115,22,0.2)"]].map(([c,bg])=>(
+              <div key={c} className="h-10 w-10 rounded-full animate-spin"
+                style={{ border:`3px solid ${bg}`, borderTopColor:c }} />
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Skeleton Loader"
+            code={`<div className="animate-pulse rounded-xl bg-slate-800 h-4 w-3/4" />`}>
+            <div className="flex flex-col gap-3 w-64">
+              <div className="animate-pulse rounded-full h-12 w-12" style={{ background:"rgba(255,255,255,0.08)" }} />
+              <div className="animate-pulse rounded-xl h-4 w-3/4" style={{ background:"rgba(255,255,255,0.08)" }} />
+              <div className="animate-pulse rounded-xl h-4 w-full" style={{ background:"rgba(255,255,255,0.08)" }} />
+              <div className="animate-pulse rounded-xl h-4 w-2/3" style={{ background:"rgba(255,255,255,0.08)" }} />
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Toggles() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🔄" title="Toggles" desc="Switch and toggle components." />
+          <PreviewCard title="Toggle Switches"
+            code={`function Toggle({ on, setOn, color = "#7c3aed" }) {
+  return (
+    <button onClick={() => setOn(!on)} className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+      style={{ background: on ? color : "rgba(255,255,255,0.1)" }}>
+      <span className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+        style={{ transform: on ? "translateX(1.375rem)" : "translateX(0.25rem)" }} />
+    </button>
+  );
+}`}>
+            <div className="flex flex-col gap-3">
+              <Toggle label="Dark Mode" defaultOn={true} color="#7c3aed" />
+              <Toggle label="Notifications" defaultOn={false} color="#10b981" />
+              <Toggle label="Auto-save" defaultOn={true} color="#0ea5e9" />
+              <Toggle label="Analytics" defaultOn={false} color="#ec4899" />
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Progress() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="📊" title="Progress Bars" desc="Progress and status indicators." />
+          <PreviewCard title="Progress Bars"
+            code={`<div className="h-2 w-full rounded-full" style={{ background:"rgba(255,255,255,0.07)" }}>
+  <div className="h-full rounded-full" style={{ width:"75%", background:"linear-gradient(90deg,#7c3aed,#a855f7)" }} />
+</div>`}>
+            <div className="w-full max-w-sm space-y-4">
+              <ProgressBar value={85} color="#7c3aed" label="Development" />
+              <ProgressBar value={62} color="#10b981" label="Design" />
+              <ProgressBar value={91} color="#0ea5e9" label="Testing" />
+              <ProgressBar value={44} color="#f97316" label="Deployment" />
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Gradients() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="🌈" title="Gradient Components" desc="Beautiful gradient backgrounds and text effects." />
+          <PreviewCard title="Gradient Text"
+            code={`<h2 className="text-4xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+  Gradient Text
+</h2>`}>
+            <div className="flex flex-col gap-3">
+              <h2 className="text-3xl font-black bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+                Gradient Text
+              </h2>
+              <h2 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+                Cyan to Violet
+              </h2>
+              <h2 className="text-3xl font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                Emerald Wave
+              </h2>
+            </div>
+          </PreviewCard>
+          <PreviewCard title="Gradient Cards"
+            code={`<div className="rounded-2xl p-6 text-white" style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>
+  <h3 className="font-bold text-lg">Pro Plan</h3>
+  <p className="text-sm opacity-80">Lifetime access</p>
+</div>`}>
+            {[["#7c3aed","#ec4899","Pro Plan","₹69 lifetime"],["#0ea5e9","#6366f1","Growth","$2.99/yr"],["#10b981","#0d9488","Starter","Free forever"],["#f97316","#ef4444","Launch","Limited offer"]].map(([c1,c2,t,s])=>(
+              <div key={t} className="rounded-2xl p-5 w-36 text-white"
+                style={{ background:`linear-gradient(135deg,${c1},${c2})` }}>
+                <div className="text-sm font-black">{t}</div>
+                <div className="text-xs opacity-75 mt-0.5">{s}</div>
+              </div>
+            ))}
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Glass() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="✦" title="Glassmorphism" desc="Frosted glass UI components." />
+          <PreviewCard title="Glass Cards"
+            code={`<div className="rounded-2xl p-5" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", backdropFilter:"blur(16px)" }}>
+  <h3 className="font-bold text-white">Glass Card</h3>
+  <p className="text-sm text-white/60 mt-1">Frosted glass effect</p>
+</div>`}>
+            <div className="flex gap-4 flex-wrap">
+              <div className="rounded-2xl p-5 w-48" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)", backdropFilter:"blur(16px)" }}>
+                <div className="h-8 w-8 rounded-xl mb-3" style={{ background:"rgba(139,92,246,0.4)" }} />
+                <h3 className="font-bold text-white text-sm">Glass Card</h3>
+                <p className="text-xs text-white/40 mt-1">Frosted glass effect with backdrop blur</p>
+              </div>
+              <div className="rounded-2xl p-5 w-48" style={{ background:"linear-gradient(135deg,rgba(139,92,246,0.15),rgba(236,72,153,0.08))", border:"1px solid rgba(255,255,255,0.12)", backdropFilter:"blur(20px)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="h-8 w-8 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }} />
+                  <div className="h-2 w-16 rounded-full" style={{ background:"rgba(255,255,255,0.3)" }} />
+                </div>
+                <div className="h-2 w-full rounded-full mb-1.5" style={{ background:"rgba(255,255,255,0.1)" }} />
+                <div className="h-2 w-4/5 rounded-full" style={{ background:"rgba(255,255,255,0.07)" }} />
+              </div>
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    function Neon() {
+      return (
+        <div className="space-y-5">
+          <SectionHeader emoji="💡" title="Neon Effects" desc="Glowing neon UI components." />
+          <PreviewCard title="Neon Buttons"
+            code={`<button className="rounded-xl px-5 py-2.5 text-sm font-bold text-cyan-300"
+  style={{ border:"1px solid rgba(0,255,200,0.4)", boxShadow:"0 0 14px rgba(0,255,200,0.2), inset 0 0 14px rgba(0,255,200,0.05)", background:"transparent" }}>
+  NEON
+</button>`}>
+            {[["rgba(0,255,200,0.4)","#67e8f9","rgba(0,255,200,0.2)","CONNECT"],["rgba(200,0,255,0.4)","#e879f9","rgba(200,0,255,0.2)","EXECUTE"],["rgba(100,255,100,0.4)","#86efac","rgba(100,255,100,0.15)","DEPLOY"],["rgba(255,100,0,0.4)","#fb923c","rgba(255,100,0,0.15)","LAUNCH"]].map(([bc,tc,glow,l])=>(
+              <button key={l} className="rounded-xl px-5 py-2.5 text-sm font-bold transition-all hover:scale-105"
+                style={{ border:`1px solid ${bc}`, color:tc, boxShadow:`0 0 16px ${glow}, inset 0 0 12px ${glow}`, background:"transparent" }}>{l}</button>
+            ))}
+          </PreviewCard>
+          <PreviewCard title="Neon Text"
+            code={`<h2 className="text-4xl font-black" style={{ color:"#67e8f9", textShadow:"0 0 20px rgba(0,255,200,0.6), 0 0 40px rgba(0,255,200,0.3)" }}>
+  NEON GLOW
+</h2>`}>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-3xl font-black" style={{ color:"#67e8f9", textShadow:"0 0 20px rgba(0,255,200,0.6),0 0 40px rgba(0,255,200,0.3)" }}>NEON CYAN</h2>
+              <h2 className="text-3xl font-black" style={{ color:"#e879f9", textShadow:"0 0 20px rgba(200,0,255,0.6),0 0 40px rgba(200,0,255,0.3)" }}>NEON PINK</h2>
+            </div>
+          </PreviewCard>
+        </div>
+      );
+    }
+
+    const SECTIONS = { buttons:<Buttons/>, badges:<Badges/>, cards:<Cards/>, inputs:<Inputs/>, alerts:<Alerts/>, avatars:<Avatars/>, spinners:<Spinners/>, toggles:<Toggles/>, progress:<Progress/>, gradients:<Gradients/>, glass:<Glass/>, neon:<Neon/> };
+
+    /* ── APP ─────────────────────────────────────── */
+    function App() {
+      const [active, setActive] = useState("buttons");
+
+      return (
+        <div className="flex min-h-screen">
+          {/* Sidebar */}
+          <aside className="hidden md:flex w-56 flex-shrink-0 flex-col sticky top-0 h-screen overflow-y-auto"
+            style={{ background:"#080d18", borderRight:"1px solid rgba(255,255,255,0.06)" }}>
+            {/* Logo */}
+            <div className="px-5 py-5" style={{ borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+              <a href="https://uidrop.dev" target="_blank" rel="noopener"
+                className="flex items-center gap-2 text-white font-black text-lg hover:text-violet-400 transition-colors">
+                <span style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)", borderRadius:8, padding:"4px 8px", fontSize:14 }}>UI</span>
+                Drop
+              </a>
+              <p className="text-xs text-slate-600 mt-1">Free Components</p>
+            </div>
+            <nav className="flex-1 p-3 space-y-1">
+              {NAV_CATEGORIES.map(c => (
+                <div key={c.id} className={`sidebar-link ${active===c.id?"active":""}`}
+                  onClick={() => setActive(c.id)}>
+                  <span className="mr-2">{c.emoji}</span>{c.label}
+                </div>
+              ))}
+            </nav>
+            {/* CTA */}
+            <div className="p-4" style={{ borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+              <a href="https://uidrop.dev" target="_blank" rel="noopener"
+                className="block w-full text-center rounded-xl py-2.5 text-xs font-bold text-white transition-all hover:scale-105"
+                style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>
+                Get Pro Access →
+              </a>
+            </div>
+          </aside>
+
+          {/* Main */}
+          <main className="flex-1 overflow-auto">
+            {/* Top bar */}
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4"
+              style={{ background:"rgba(2,6,23,0.9)", borderBottom:"1px solid rgba(255,255,255,0.06)", backdropFilter:"blur(12px)" }}>
+              <div>
+                <h1 className="text-base font-black text-white">
+                  {NAV_CATEGORIES.find(c=>c.id===active)?.emoji} {NAV_CATEGORIES.find(c=>c.id===active)?.label}
+                </h1>
+                <p className="text-xs text-slate-600">Free · Copy-paste ready · Tailwind CSS</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <a href="https://github.com/ayushkumar080800/uidrop-components" target="_blank" rel="noopener"
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 transition-all hover:text-white"
+                  style={{ background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)" }}>
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                  Star on GitHub
+                </a>
+                <a href="https://uidrop.dev" target="_blank" rel="noopener"
+                  className="rounded-lg px-3 py-1.5 text-xs font-bold text-white"
+                  style={{ background:"linear-gradient(135deg,#7c3aed,#ec4899)" }}>
+                  Pro →
+                </a>
+              </div>
+            </div>
+
+            <div className="p-6 max-w-4xl">
+              {SECTIONS[active]}
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

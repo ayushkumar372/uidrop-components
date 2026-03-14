@@ -2,7 +2,7 @@
 
 > 50+ free copy-paste React UI components built with Tailwind CSS
 
-**[🔴 Live Demo](https://ayushkumar080800.github.io/uidrop-components)** &nbsp;·&nbsp;
+**[🔴 Live Demo](https://ayushkumar372.github.io/uidrop-components)** &nbsp;·&nbsp;
 **[🛍️ Pro Access](https://uidrop.dev)** &nbsp;·&nbsp;
 **[💬 WhatsApp](https://wa.me/918377898424)**
 
